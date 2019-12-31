@@ -1,0 +1,48 @@
+import axios from 'axios'
+import router from '../../router/index'
+
+let headers = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json' 
+}
+
+const state = {
+ 
+}
+
+const mutations = {
+  UPDATE_USER_AUTHORIZATION (state, payload) {
+    state.user.authorization = payload
+  }
+}
+
+const actions = {
+
+  login ({ commit }, user_credentials) {
+    console.log(user_credentials)
+    axios.post('/api/auth/login', user_credentials, {headers: headers}).then((response) => {
+      commit('UPDATE_USER_AUTHORIZATION', response.data)
+      router.push('/dashboard')
+    }).catch(e => {
+      console.log(e)
+    })
+  },
+  logout ({ commit }, cartItem) {
+    axios.post('/api/auth/logout', cartItem).then((response) => {
+      commit('UPDATE_USER_AUTHORIZATION', response.data)
+    })
+  }  
+}
+
+const getters = {
+  get_authorization: state => state.user.authorization,
+}
+
+const userModule = {
+  state,
+  mutations,
+  actions,
+  getters
+}
+export default userModule
+

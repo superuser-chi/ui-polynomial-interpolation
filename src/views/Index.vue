@@ -3,12 +3,12 @@
     <q-ajax-bar ref="bar" position="bottom" color="primary" size="10px" skip-hijack />
     <q-card flat bordered class="col-xs-12 col-md-10 bg-grey-1">
       <q-card-section>
-        <div class="text-h2 text-bold tex-italic">Polynomial Interpolation tutor</div>
+        <div class="text-h5 text-bold tex-italic">Polynomial interpolation</div>
       </q-card-section>
 
       <q-card-section class="flex">
         This calculator is meant to help students in using different techniques of deriving polynomials
-        that approximate given data
+        that approximate given data 
       </q-card-section>
       <div class="q-pa-md">
         <q-card class="sub-card bg-grey-4">
@@ -19,19 +19,6 @@
           <q-card-section>
             <div class="q-pa-md">
               <div class="q-gutter-md" style>
-                <q-select
-                  outlined
-                  v-model="type"
-                  label="Pick type of problem to solve"
-                  :options="types"
-                  :dense="dense"
-                  :options-dense="denseOpts"
-                >
-                  <template v-slot:append>
-                    <q-icon name="close" @click.stop="model = ''" class="cursor-pointer" />
-                  </template>
-                </q-select>
-
                 <q-select
                   outlined
                   v-model="method"
@@ -57,7 +44,37 @@
                     <q-icon name="close" @click="n = ''" class="cursor-pointer" />
                   </template>
 
-                  <template v-slot:hint>matrix dimension i.e 2 for 2 by 2 matrix</template>
+                  <template v-slot:hint>the number of points</template>
+                </q-input>
+
+                <q-input
+                  bottom-slots
+                  v-model="x"
+                  type="text"
+                  label="Pick dimension"
+                  counter
+                  :dense="dense"
+                >
+                  <template v-slot:append>
+                    <q-icon name="close" @click="n = ''" class="cursor-pointer" />
+                  </template>
+
+                  <template v-slot:hint>the variable to be used</template>
+                </q-input>
+
+                <q-input
+                  bottom-slots
+                  v-model="f"
+                  type="text"
+                  label="Pick dimension"
+                  counter
+                  :dense="dense"
+                >
+                  <template v-slot:append>
+                    <q-icon name="close" @click="n = ''" class="cursor-pointer" />
+                  </template>
+
+                  <template v-slot:hint>the function to be used</template>
                 </q-input>
               </div>
             </div>
@@ -88,30 +105,41 @@
           <q-separator dark />
 
           <q-card-actions>
-            <q-btn :loading="loading" color="primary" @click="showWorking = !showWorking">
-              steps
-              <template v-slot:loading>
-                <q-spinner-gears />
-              </template>
-            </q-btn>
-            <q-btn :loading="loading" color="secondary" @click="showAnswer = !showAnswer">
-              answer
-              <template v-slot:loading>
-                <q-spinner-gears />
-              </template>
-            </q-btn>
+            <q-toggle
+              v-model="showAnswer"
+              checked-icon="check"
+              color="green"
+              unchecked-icon="clear"
+              label="show answer"
+            />
+            <q-toggle
+              v-model="showWorking"
+              checked-icon="check"
+              color="red"
+              label="show steps"
+              unchecked-icon="clear"
+            />
           </q-card-actions>
         </q-card>
       </div>
-      <div class="q-pa-md" v-show="working">
+      <div class="q-pa-md" v-show="showAnswer">
         <q-card class="sub-card bg-grey-4">
           <q-card-section>
-            <div class="text-h6">Solution</div>
+            <div class="text-h6">Answer</div>
           </q-card-section>
 
           <q-card-section>
             <vue-mathjax ref="answer" :formula="answer" :options="props" class="col-12" />
-            <q-separator dark />
+          </q-card-section>
+        </q-card>
+      </div>
+      <div class="q-pa-md" v-show="showWorking">
+        <q-card class="sub-card bg-grey-4">
+          <q-card-section>
+            <div class="text-h6">working</div>
+          </q-card-section>
+
+          <q-card-section>
             <vue-mathjax ref="working" :formula="working" :options="props" class="col-12" />
           </q-card-section>
         </q-card>
@@ -137,8 +165,11 @@ export default {
       method: "Lagrange",
       types: ["Decompose A = LU", "Solve AX = B"],
       n: 2,
+      f: "f",
+      x: "x",
+      action: "getQuestionSolutionLagrange",
       question: undefined,
-      methods: ["Lagrange", "Crout", "Naive Gauss"],
+      methods: ["Lagrange", "Newton"],
       dense: false,
       denseOpts: false,
       props: {
@@ -149,6 +180,15 @@ export default {
       showWorking: false,
       showAnswer: false
     };
+  },
+  watch: {
+    method: function(value) {
+      if (value === "Lagrange") {
+        this.action = "getQuestionSolutionLagrange";
+      } else if (value === "Newton") {
+        this.action = "getQuestionSolutionNewton";
+      }
+    }
   },
   computed: {
     ...mapState("app", ["dialog", "maximizedToggle", "message"]),
@@ -195,16 +235,17 @@ export default {
     },
     generateQuestion() {
       let payload = {
-        n: `${this.n}`,
-        method: `${this.methods.indexOf(this.method) + 1}`,
+        var: `${this.x}`,
+        function: `${this.f}`,
+        n: `${this.n}`
       };
-      this.$store.dispatch("post/getQuestionSolution", payload).then(
+      this.$store.dispatch(`post/${this.action}`, payload).then(
         response => {
           this.question = response.data["question"];
-          // this.update_element("question");
-
+          //this.update_element("question");
+          this.answer = response.data["answer"]
           this.working = response.data["working"];
-          // this.update_element("working");
+          //this.update_element("working");
           if (this.$refs.bar) {
             this.$refs.bar.stop();
           }
@@ -216,13 +257,11 @@ export default {
         }
       );
     },
-    clean_latex(str) {
-      str = str.replace(new RegExp("(align)[*]", "g"), "aligned");
-      return str;
-    },
     reset() {
       this.question = undefined;
       this.working = undefined;
+      this.showWorking = false;
+      this.showAnswer = false;
     },
     update_element(element) {
       this.$nextTick(() => {

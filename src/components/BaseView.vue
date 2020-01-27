@@ -86,7 +86,7 @@ export default {
   },
   metaInfo() {
     return {
-      title: "LU Decomposition"
+      title: "Polynomial Interpolation"
     };
   }
 };

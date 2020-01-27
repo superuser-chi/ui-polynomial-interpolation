@@ -39,7 +39,7 @@
 
                   <q-card-section>
                     <div class="q-pa-md">
-                      <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+                      <q-form class="q-gutter-md">
                         <q-input
                           label="Your name"
                           hint="Name and surname"

@@ -3,7 +3,7 @@
     <q-toolbar style="background-color: #00c851; height: 8vh">
       <q-btn dense flat round icon="menu" @click="toggleDrawer" />
 
-      <q-toolbar-title>Polynomial Interpolation</q-toolbar-title>
+      <q-toolbar-title>MathRecon</q-toolbar-title>
       <q-btn dense flat round icon="search" @click="toggleDialog" />
       <q-btn dense flat round icon="dashboard" @click="trigger" />
       <q-btn dense flat round icon="more_vert" @click="show" />

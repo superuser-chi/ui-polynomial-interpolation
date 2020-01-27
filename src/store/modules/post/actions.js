@@ -104,13 +104,13 @@ export default {
   },
 
   // eslint-disable-next-line space-before-function-paren
-  getQuestionSolution({
+  getQuestionSolutionLagrange({
      // eslint-disable-next-line
     commit
   }, post) {
     return new Promise((resolve, reject) => {
       axios
-        .post('/faas/fn-polynomial-interpolation', post, {
+        .post('/faas/fn-pi-lagrange', post, {
           headers: headers
         })
         .then(
@@ -122,5 +122,25 @@ export default {
           }
         )
     })
-  }
+  },
+    // eslint-disable-next-line space-before-function-paren
+    getQuestionSolutionNewton({
+      // eslint-disable-next-line
+     commit
+   }, post) {
+     return new Promise((resolve, reject) => {
+       axios
+         .post('/faas/fn-pi-newton', post, {
+           headers: headers
+         })
+         .then(
+           response => {
+             resolve(response)
+           },
+           error => {
+             reject(error)
+           }
+         )
+     })
+   }
 }
